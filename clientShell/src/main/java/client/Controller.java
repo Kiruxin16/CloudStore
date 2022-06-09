@@ -41,18 +41,24 @@ public class Controller implements Initializable {
     public List<String> serverFilesList;
 
     public void initialize(URL location, ResourceBundle resources) {
-        Platform.runLater(() -> {
-
-
-        });
         connect();
         new Thread(()->{
-           //sendFile();
-           refresh();
+            try {
+                //sendFile();
+                refresh();
+                DataInputStream mainDin = new DataInputStream(in);
+                while (true) {
+                    String command = mainDin.readUTF();
+                    if(command.startsWith("/READYFORRECIVE")){
+                        sendFile(command.split(" ",2)[1]);
+                        refresh();
+                    }
 
-           while(true){
 
-           }
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }).start();
 
 
@@ -108,8 +114,8 @@ public class Controller implements Initializable {
 
         int selectInd =clientFiles.getSelectionModel().getSelectedIndex();
         if(selectInd!=-1) {
-            sendFile(clientFiles.getItems().get(selectInd).toString());
-            refresh();
+            sendFileInfo(clientFiles.getItems().get(selectInd).toString());
+
         }
 
 
@@ -118,9 +124,9 @@ public class Controller implements Initializable {
 
     }
 
-    public void sendFile(String filename) {
+    public void sendFileInfo(String filename) {
         try {
-            byte[] b = new byte[1024];
+
             String path = String.format("clientShell/clientDirectory/"+filename);
             File file = new File(path);
 
@@ -132,6 +138,20 @@ public class Controller implements Initializable {
             sendCommand(String.format("/SEND "+kbBytes+" "+filename));
             //List<String> outList = new ArrayList<>(Arrays.asList("test","test","test","test"));
 
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void sendFile(String filename){
+
+        byte[] b = new byte[1024];
+        String path = String.format("clientShell/clientDirectory/"+filename);
+        File file = new File(path);
+        try{
             OutputStream dout = new DataOutputStream(out);
             InputStream ins = new FileInputStream(file);
             int n = ins.read(b);
@@ -150,14 +170,9 @@ public class Controller implements Initializable {
                 }
             }
 
-
-//            ByteArrayOutputStream ois = new ByteArrayOutputStream();
-            //InputStream ois = new ObjectInputStream(outList);
-
-        } catch (IOException e) {
+        }catch (IOException e){
             e.printStackTrace();
         }
-
     }
 
     public void getFilesList() {

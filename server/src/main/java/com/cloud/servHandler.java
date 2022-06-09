@@ -54,9 +54,13 @@ public class servHandler implements Runnable {
     }
 
     private void resiveFiles(long kbBytes,String filename){
+        DataOutputStream dout =new DataOutputStream(outputStream);
+        DataInputStream din = new DataInputStream(inputStream);
+
         byte[] b = new byte[1024];
         try{
-            DataInputStream din = new DataInputStream(inputStream);
+            dout.writeUTF(String.format("/READYFORRECIVE "+filename));
+            dout.flush();
             String path = String.format("./server/serverDirectory/"+filename);
             File f= new File(path);
             if (f.exists()) {
@@ -71,8 +75,6 @@ public class servHandler implements Runnable {
                     copynum++;
                 }
             }
-
-
             RandomAccessFile fw =new RandomAccessFile(f,"rw");
             int n;
             for (long i = 0; i <kbBytes ; i++) {
@@ -81,12 +83,7 @@ public class servHandler implements Runnable {
                 fw.skipBytes(n);
 
             }
-            System.out.println("мы здесь");
             fw.close();
-
-
-
-            DataOutputStream dout =new DataOutputStream(outputStream);
             dout.writeUTF("/OK");
             dout.flush();
 
